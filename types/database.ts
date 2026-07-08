@@ -1,5 +1,5 @@
 export type ServiceType = "ai" | "website" | "ai+website";
-export type StatusType = "pending" | "accepted" | "rejected";
+export type StatusType = "not_contacted" | "pending" | "accepted" | "rejected";
 export type ActivityType =
   | "created"
   | "status_changed"
@@ -47,4 +47,9 @@ export interface Activity {
 }
 
 export const SERVICES: ServiceType[] = ["ai", "website", "ai+website"];
-export const STATUSES: StatusType[] = ["pending", "accepted", "rejected"];
+export const STATUSES: StatusType[] = [
+  "not_contacted",
+  "pending",
+  "accepted",
+  "rejected",
+];

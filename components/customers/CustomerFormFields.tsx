@@ -99,8 +99,9 @@ export function CustomerFormFields({
         <Select
           name="status"
           label="Status"
-          defaultValue={customer?.status ?? "pending"}
+          defaultValue={customer?.status ?? "not_contacted"}
         >
+          <option value="not_contacted">{STATUS_LABELS.not_contacted}</option>
           <option value="pending">{STATUS_LABELS.pending}</option>
           <option value="accepted">{STATUS_LABELS.accepted}</option>
           <option value="rejected">{STATUS_LABELS.rejected}</option>

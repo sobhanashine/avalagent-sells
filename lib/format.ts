@@ -76,6 +76,7 @@ export const SERVICE_PRICES: Record<string, number> = {
 };
 
 export const STATUS_LABELS: Record<string, string> = {
+  not_contacted: "Not contacted",
   pending: "Pending",
   accepted: "Accepted",
   rejected: "Rejected",

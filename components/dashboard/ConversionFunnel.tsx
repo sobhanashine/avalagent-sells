@@ -3,21 +3,29 @@ import { STATUS_LABELS } from "@/lib/format";
 import type { StatusType } from "@/types/database";
 
 const STATUS_BAR_COLORS: Record<StatusType, string> = {
+  not_contacted: "#0ea5e9",
   pending: "var(--warning)",
   accepted: "var(--success)",
   rejected: "var(--danger)",
 };
 
+/** Funnel order: top of funnel first, accepted/rejected at the bottom. */
+const FUNNEL_ORDER: StatusType[] = [
+  "not_contacted",
+  "pending",
+  "accepted",
+  "rejected",
+];
+
 export function ConversionFunnel({
   counts,
 }: {
-  counts: Record<StatusType, number>;
+  counts: Partial<Record<StatusType, number>>;
 }) {
-  const entries: { status: StatusType; count: number }[] = [
-    { status: "pending", count: counts.pending },
-    { status: "accepted", count: counts.accepted },
-    { status: "rejected", count: counts.rejected },
-  ];
+  const entries = FUNNEL_ORDER.map((status) => ({
+    status,
+    count: counts[status] ?? 0,
+  }));
   const max = Math.max(1, ...entries.map((e) => e.count));
 
   return (

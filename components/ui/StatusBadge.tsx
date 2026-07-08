@@ -2,7 +2,8 @@ import { Badge } from "@/components/ui/Badge";
 import { STATUS_LABELS, SERVICE_LABELS } from "@/lib/format";
 import type { StatusType, ServiceType } from "@/types/database";
 
-const statusTones: Record<StatusType, "warning" | "success" | "danger"> = {
+const statusTones: Record<StatusType, "info" | "warning" | "success" | "danger"> = {
+  not_contacted: "info",
   pending: "warning",
   accepted: "success",
   rejected: "danger",

@@ -158,6 +158,7 @@ export default async function DashboardPage() {
               <CardBody>
                 <ConversionFunnel
                   counts={{
+                    not_contacted: stats.notContacted,
                     pending: stats.pending,
                     accepted: stats.accepted,
                     rejected: stats.rejected,

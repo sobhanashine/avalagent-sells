@@ -17,6 +17,7 @@ import type {
   Customer,
   StatusType,
 } from "@/types/database";
+import { STATUSES } from "@/types/database";
 
 export function CustomerDetailPanel({
   customer,
@@ -161,8 +162,8 @@ export function CustomerDetailPanel({
                 <div className="text-xs font-medium uppercase tracking-wide text-[var(--muted-foreground)] mb-2">
                   Set status
                 </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {(["pending", "accepted", "rejected"] as StatusType[]).map((s) => {
+                <div className="grid grid-cols-2 gap-2">
+                  {STATUSES.map((s) => {
                     const isCurrent = customer.status === s;
                     return (
                       <Button

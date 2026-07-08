@@ -13,6 +13,7 @@ export interface DashboardStats {
   pending: number;
   accepted: number;
   rejected: number;
+  notContacted: number;
   conversionRate: number;
   pipelineValue: number;
   realizedRevenue: number;
@@ -44,6 +45,7 @@ export async function getDashboardStats(): Promise<DashboardStats | null> {
   const pending = all.filter((c) => c.status === "pending").length;
   const accepted = all.filter((c) => c.status === "accepted").length;
   const rejected = all.filter((c) => c.status === "rejected").length;
+  const notContacted = all.filter((c) => c.status === "not_contacted").length;
 
   const services: ServiceType[] = ["ai", "website", "ai+website"];
   const serviceBreakdown = services.map((service) => {
@@ -79,6 +81,7 @@ export async function getDashboardStats(): Promise<DashboardStats | null> {
     pending,
     accepted,
     rejected,
+    notContacted,
     conversionRate,
     pipelineValue,
     realizedRevenue,

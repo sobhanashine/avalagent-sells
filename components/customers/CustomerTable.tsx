@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
 import { formatDate } from "@/lib/format";
 import type { Customer, StatusType } from "@/types/database";
+import { STATUSES } from "@/types/database";
 import { bulkSetCustomerStatus, bulkDeleteCustomers } from "@/lib/actions/customers";
 import { STATUS_LABELS } from "@/lib/format";
 
@@ -180,7 +181,7 @@ export function CustomerTable({ customers }: { customers: Customer[] }) {
             </span>
             <span className="size-1 rounded-full bg-[var(--border-strong)]" />
             <div className="flex items-center gap-1.5 flex-wrap">
-              {(["pending", "accepted", "rejected"] as StatusType[]).map((s) => (
+              {STATUSES.map((s) => (
                 <Button
                   key={s}
                   size="sm"
