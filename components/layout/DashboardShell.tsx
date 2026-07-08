@@ -1,6 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
-import { LayoutDashboard, Users, Settings, Plus } from "lucide-react";
+import { LayoutDashboard, Users, Plus } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { MobileNav } from "./MobileNav";
 import { UserMenu } from "./UserMenu";
@@ -37,21 +37,12 @@ export function DashboardShell({
         }
       />
       <div className="flex-1 min-w-0 flex flex-col">
-        <MobileNav items={navItems} />
+        <MobileNav items={navItems} email={email} />
         <header className="hidden md:flex h-14 px-6 lg:px-8 items-center justify-between gap-4 border-b border-[var(--border)] bg-[var(--surface)] sticky top-0 z-20">
           <div className="text-sm text-[var(--muted-foreground)] truncate">
             {rightHeader}
           </div>
           <div className="flex items-center gap-2">
-            <a
-              href="https://github.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Project on GitHub"
-              className="hidden lg:inline-flex size-9 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors"
-            >
-              <Settings size={14} />
-            </a>
             <UserMenu email={email} />
           </div>
         </header>

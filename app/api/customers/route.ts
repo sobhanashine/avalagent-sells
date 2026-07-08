@@ -31,6 +31,7 @@ export async function POST(req: Request) {
   const { data, error } = await supabase
     .from("customers")
     .insert({
+      user_id: user.id,
       instagram_username: instagram,
       phone,
       service,

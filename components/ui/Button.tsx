@@ -65,7 +65,6 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       return React.cloneElement(child, {
         ...rest,
         className: cn(composedClass, child.props.className),
-        children,
       });
     }
 

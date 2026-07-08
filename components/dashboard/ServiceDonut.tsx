@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import { SERVICE_LABELS } from "@/lib/format";
 import type { ServiceType } from "@/types/database";

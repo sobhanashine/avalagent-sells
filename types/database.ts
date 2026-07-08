@@ -9,6 +9,7 @@ export type ActivityType =
 
 export interface Customer {
   id: string;
+  user_id: string;
   instagram_username: string;
   phone: string | null;
   service: ServiceType;
@@ -19,6 +20,7 @@ export interface Customer {
 }
 
 export interface CustomerInsert {
+  user_id?: string;
   instagram_username: string;
   phone?: string | null;
   service: ServiceType;

@@ -32,11 +32,14 @@ export function CustomerFilters() {
 
   // Debounced search input — keeps the URL in sync without spamming history.
   React.useEffect(() => {
+    const currentQ = params.get("q") ?? "";
+    if (search.trim() === currentQ.trim()) return;
+
     const t = setTimeout(() => {
       commit("q", search.trim() ? search.trim() : null);
     }, 200);
     return () => clearTimeout(t);
-  }, [search, commit]);
+  }, [search, commit, params]);
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
