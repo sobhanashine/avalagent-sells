@@ -1,65 +1,197 @@
-import Image from "next/image";
+import Link from "next/link";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { getDashboardStats, type DashboardStats } from "@/lib/queries";
+import { DashboardShell } from "@/components/layout/DashboardShell";
+import { StatCard } from "@/components/dashboard/StatCard";
+import { ServiceDonut } from "@/components/dashboard/ServiceDonut";
+import { ConversionFunnel } from "@/components/dashboard/ConversionFunnel";
+import { RecentCustomers } from "@/components/dashboard/RecentCustomers";
+import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { formatCurrency } from "@/lib/format";
+import { FlashBanner } from "@/components/ui/FlashMessage";
+import { SetupRequiredScreen } from "@/components/SetupRequiredScreen";
+import { Users, TrendingUp, Plus } from "lucide-react";
 
-export default function Home() {
+export default async function DashboardPage() {
+  if (!isSupabaseConfigured()) {
+    return <SetupRequiredScreen />;
+  }
+
+  const supabase = await createClient();
+  if (!supabase) return <SetupRequiredScreen />;
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  // getDashboardStats throws a human-readable Error on Supabase failures.
+  // We catch so the page can render an actionable message instead of
+  // crashing the whole dashboard.
+  let stats: DashboardStats | null = null;
+  let loadError: string | null = null;
+  try {
+    stats = await getDashboardStats();
+  } catch (err) {
+    loadError = err instanceof Error ? err.message : String(err);
+  }
+  const pathname = (await headers()).get("x-pathname") ?? "/";
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <DashboardShell
+      pathname={pathname}
+      email={user.email ?? "Signed in"}
+      rightHeader="Overview"
+    >
+      <FlashBanner />
+      <PageHeader
+        title={`Welcome back, ${(user.email ?? "you").split("@")[0]}`}
+        description="Here's how your pipeline looks today."
+        actions={
+          <Link
+            href="/customers?new=1"
+            className="inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] bg-[var(--accent)] text-[var(--accent-foreground)] text-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            <Plus size={14} />
+            Add customer
+          </Link>
+        }
+      />
+
+      {loadError || !stats ? (
+        <EmptyState
+          icon={<span className="text-2xl">⚠</span>}
+          title="Could not load your data"
+          description={
+            loadError ??
+            "Check your Supabase configuration and try again."
+          }
+          action={
+            <Link
+              href="/customers"
+              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] bg-[var(--muted)] text-sm font-medium hover:bg-[var(--muted)]/70 transition-colors"
+            >
+              Try the customers page →
+            </Link>
+          }
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+      ) : stats.total === 0 ? (
+        <Card>
+          <CardBody>
+            <EmptyState
+              icon={<Users size={20} />}
+              title="Start by adding your first customer"
+              description="Track leads, accept deals, and watch your pipeline fill in real time."
+              action={
+                <Link
+                  href="/customers?new=1"
+                  className="inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] bg-[var(--accent)] text-[var(--accent-foreground)] text-sm font-medium hover:opacity-90 transition-opacity"
+                >
+                  <Plus size={14} />
+                  Add customer
+                </Link>
+              }
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+          </CardBody>
+        </Card>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <StatCard
+              label="Total customers"
+              value={stats.total}
+              intent="neutral"
+            />
+            <StatCard
+              label="Pending"
+              value={stats.pending}
+              intent="warning"
+              sublabel={`${formatCurrency(stats.pipelineValue)} in pipeline`}
+            />
+            <StatCard
+              label="Accepted"
+              value={stats.accepted}
+              intent="success"
+              sublabel={`${formatCurrency(stats.realizedRevenue)} realized`}
+            />
+            <StatCard
+              label="Conversion"
+              value={`${stats.conversionRate.toFixed(0)}%`}
+              intent="info"
+              sublabel={`${stats.accepted} of ${stats.accepted + stats.rejected} decided`}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mt-3">
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <div>
+                  <CardTitle>Customers by service</CardTitle>
+                  <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
+                    Distribution across all leads
+                  </p>
+                </div>
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/customers">View all</Link>
+                </Button>
+              </CardHeader>
+              <CardBody>
+                <ServiceDonut data={stats.serviceBreakdown} />
+              </CardBody>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div>
+                  <CardTitle>Pipeline funnel</CardTitle>
+                  <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
+                    Where leads stand today
+                  </p>
+                </div>
+              </CardHeader>
+              <CardBody>
+                <ConversionFunnel
+                  counts={{
+                    pending: stats.pending,
+                    accepted: stats.accepted,
+                    rejected: stats.rejected,
+                  }}
+                />
+                <div className="mt-5 pt-4 border-t border-[var(--border)] flex items-center justify-between text-xs">
+                  <span className="text-[var(--muted-foreground)] flex items-center gap-1.5">
+                    <TrendingUp size={12} />
+                    Realized revenue
+                  </span>
+                  <span className="font-semibold tabular-nums">
+                    {formatCurrency(stats.realizedRevenue)}
+                  </span>
+                </div>
+              </CardBody>
+            </Card>
+          </div>
+
+          <Card className="mt-3">
+            <CardHeader>
+              <div>
+                <CardTitle>Recent customers</CardTitle>
+                <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
+                  Last {Math.min(stats.recent.length, 6)} leads
+                </p>
+              </div>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/customers">Open customers</Link>
+              </Button>
+            </CardHeader>
+            <RecentCustomers customers={stats.recent} />
+          </Card>
+        </>
+      )}
+    </DashboardShell>
   );
 }
