@@ -6,7 +6,7 @@ import { SERVICE_LABELS, STATUS_LABELS } from "@/lib/format";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 
-const STATUSES = ["all", "pending", "accepted", "rejected"] as const;
+const STATUSES = ["all", "not_contacted", "pending", "accepted", "rejected"] as const;
 const SERVICES = ["all", "ai", "website", "ai+website"] as const;
 const SORTS = [
   { value: "newest", label: "Newest first" },

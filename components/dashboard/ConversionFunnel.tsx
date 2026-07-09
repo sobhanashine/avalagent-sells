@@ -1,4 +1,5 @@
 import * as React from "react";
+import Link from "next/link";
 import { STATUS_LABELS } from "@/lib/format";
 import type { StatusType } from "@/types/database";
 
@@ -33,7 +34,11 @@ export function ConversionFunnel({
       {entries.map((e) => {
         const pct = (e.count / max) * 100;
         return (
-          <div key={e.status} className="flex flex-col gap-1.5">
+          <Link 
+            key={e.status} 
+            href={`/customers?status=${e.status}`}
+            className="flex flex-col gap-1.5 hover:opacity-80 transition-opacity"
+          >
             <div className="flex items-center justify-between text-sm">
               <span className="text-[var(--foreground)] flex items-center gap-2">
                 <span
@@ -55,7 +60,7 @@ export function ConversionFunnel({
                 }}
               />
             </div>
-          </div>
+          </Link>
         );
       })}
     </div>
