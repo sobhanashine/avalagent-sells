@@ -34,6 +34,9 @@ export function CustomerFormFields({
   const [selectedStatus, setSelectedStatus] = React.useState<StatusType>(
     customer?.status ?? "not_contacted"
   );
+  const [selectedCategory, setSelectedCategory] = React.useState<string | null>(
+    customer?.category ?? null
+  );
 
   React.useEffect(() => {
     if (!error) return;
@@ -52,6 +55,7 @@ export function CustomerFormFields({
       // Ensure custom select values are present in FormData if hidden input doesn't propagate (it will, but safe check)
       fd.set("service", selectedService);
       fd.set("status", selectedStatus);
+      fd.set("category", selectedCategory ?? "");
 
       const res = await fetch("/api/customers", {
         method: "POST",
@@ -119,11 +123,45 @@ export function CustomerFormFields({
     },
   ];
 
+  const categoryOptions: { value: string | null; label: string; activeClass: string }[] = [
+    {
+      value: null,
+      label: "None",
+      activeClass: "border-slate-500/50 bg-[color-mix(in_oklab,var(--border-strong)_20%,transparent)] text-[var(--foreground)] ring-2 ring-slate-500/10",
+    },
+    {
+      value: "cold_lead",
+      label: "Cold Lead",
+      activeClass: "border-sky-500/50 bg-sky-500/8 text-sky-600 dark:text-sky-400 ring-2 ring-sky-500/15",
+    },
+    {
+      value: "warm_lead",
+      label: "Warm Lead",
+      activeClass: "border-amber-500/50 bg-amber-500/8 text-amber-600 dark:text-amber-400 ring-2 ring-amber-500/15",
+    },
+    {
+      value: "hot_lead",
+      label: "Hot Lead",
+      activeClass: "border-rose-500/50 bg-rose-500/8 text-rose-600 dark:text-rose-400 ring-2 ring-rose-500/15",
+    },
+    {
+      value: "vip",
+      label: "VIP",
+      activeClass: "border-violet-500/50 bg-violet-500/8 text-violet-600 dark:text-violet-400 ring-2 ring-violet-500/15",
+    },
+    {
+      value: "enterprise",
+      label: "Enterprise",
+      activeClass: "border-emerald-500/50 bg-emerald-500/8 text-emerald-600 dark:text-emerald-400 ring-2 ring-emerald-500/15",
+    },
+  ];
+
   const formFieldsContent = (
     <div className="space-y-5">
       {/* Hidden inputs to make sure standard forms get the values */}
       <input type="hidden" name="service" value={selectedService} />
       <input type="hidden" name="status" value={selectedStatus} />
+      <input type="hidden" name="category" value={selectedCategory ?? ""} />
 
       {/* Grid for Instagram and Phone */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -238,6 +276,36 @@ export function CustomerFormFields({
               >
                 <span className={`size-2 rounded-full shrink-0 ${opt.dotColor}`} />
                 <span className="truncate">{opt.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Category Selector Redesign */}
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider flex items-center gap-1.5">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--muted-foreground)]">
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+            <circle cx="7" cy="7" r="1.5" fill="currentColor" />
+          </svg>
+          Customer Category / Tag
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {categoryOptions.map((opt) => {
+            const isSelected = selectedCategory === opt.value;
+            return (
+              <button
+                key={opt.value ?? "none"}
+                type="button"
+                onClick={() => setSelectedCategory(opt.value)}
+                className={`px-3 py-1.5 rounded-full border text-xs font-semibold transition-all cursor-pointer ${
+                  isSelected
+                    ? opt.activeClass
+                    : "border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] hover:border-[var(--border-strong)] hover:bg-[color-mix(in_oklab,var(--border)_15%,transparent)]"
+                }`}
+              >
+                {opt.label}
               </button>
             );
           })}

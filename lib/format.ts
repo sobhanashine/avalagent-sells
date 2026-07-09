@@ -89,3 +89,11 @@ export const ACTIVITY_LABELS: Record<string, string> = {
   updated: "Details updated",
   deleted: "Customer deleted",
 };
+
+export const CATEGORY_LABELS: Record<string, string> = {
+  cold_lead: "Cold Lead",
+  warm_lead: "Warm Lead",
+  hot_lead: "Hot Lead",
+  vip: "VIP",
+  enterprise: "Enterprise",
+};

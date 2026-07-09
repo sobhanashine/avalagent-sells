@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ServiceBadge, StatusBadge } from "@/components/ui/StatusBadge";
+import { ServiceBadge, StatusBadge, CategoryBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
 import { formatDate } from "@/lib/format";
@@ -99,6 +99,7 @@ export function CustomerTable({ customers }: { customers: Customer[] }) {
               <th className="px-2 py-3 font-medium hidden md:table-cell">Phone</th>
               <th className="px-2 py-3 font-medium">Service</th>
               <th className="px-2 py-3 font-medium">Status</th>
+              <th className="px-2 py-3 font-medium hidden sm:table-cell">Category</th>
               <th className="px-2 py-3 font-medium hidden lg:table-cell">Note</th>
               <th className="px-2 py-3 font-medium hidden lg:table-cell text-right">Added</th>
               <th className="w-10 px-4 py-3" />
@@ -147,6 +148,9 @@ export function CustomerTable({ customers }: { customers: Customer[] }) {
                   </td>
                   <td className="px-2 py-3">
                     <StatusBadge status={c.status} />
+                  </td>
+                  <td className="px-2 py-3 hidden sm:table-cell">
+                    <CategoryBadge category={c.category} />
                   </td>
                   <td className="px-2 py-3 hidden lg:table-cell text-[var(--muted-foreground)] max-w-[260px] truncate">
                     {c.note || "—"}

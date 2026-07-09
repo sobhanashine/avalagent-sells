@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { ServiceBadge, StatusBadge } from "@/components/ui/StatusBadge";
+import { ServiceBadge, StatusBadge, CategoryBadge } from "@/components/ui/StatusBadge";
 import { ActivityTimeline } from "./ActivityTimeline";
 import { CustomerFormFields } from "./CustomerFormFields";
 import { STATUS_LABELS, formatRelative } from "@/lib/format";
@@ -199,9 +199,10 @@ export function CustomerDetailPanel({
                     </svg>
                   </a>
                 </div>
-                <div className="flex items-center gap-1.5 mt-1.5">
+                <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                   <ServiceBadge service={customer.service} />
                   <StatusBadge status={customer.status} />
+                  <CategoryBadge category={customer.category} />
                 </div>
               </div>
               <button
@@ -249,6 +250,21 @@ export function CustomerDetailPanel({
                     {formatRelative(customer.created_at)}
                   </div>
                 </div>
+
+                {customer.category && (
+                  <div className="col-span-2 rounded-xl border border-[var(--border)] p-4.5 bg-[var(--surface)]/50 shadow-sm flex flex-col gap-1.5 hover:border-[var(--border-strong)] transition-all">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] flex items-center gap-1">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                        <circle cx="7" cy="7" r="1.5" fill="currentColor" />
+                      </svg>
+                      Category / Tag
+                    </div>
+                    <div className="mt-0.5">
+                      <CategoryBadge category={customer.category} />
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Status Section */}

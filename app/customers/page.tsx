@@ -26,6 +26,7 @@ export default async function CustomersPage({
   searchParams: Promise<{
     status?: string;
     service?: string;
+    category?: string;
     q?: string;
     sort?: string;
     id?: string;
@@ -45,10 +46,11 @@ export default async function CustomersPage({
   const params = await searchParams;
   const status = (params.status as StatusType | undefined) ?? "all";
   const service = (params.service as ServiceType | undefined) ?? "all";
+  const category = params.category ?? "all";
   const search = params.q?.trim() || undefined;
   const sort = (params.sort as "newest" | "oldest" | undefined) ?? "newest";
 
-  const customers = await getCustomers({ status, service, search, sort });
+  const customers = await getCustomers({ status, service, category, search, sort });
 
   let detail: { customer: Awaited<ReturnType<typeof getCustomer>>; activities: Awaited<ReturnType<typeof getCustomerTimeline>> } | null = null;
   if (params.id) {
@@ -61,7 +63,11 @@ export default async function CustomersPage({
 
   const pathname = (await headers()).get("x-pathname") ?? "/customers";
   const totalCount = customers.length;
-  const filterCount = (status !== "all" ? 1 : 0) + (service !== "all" ? 1 : 0) + (search ? 1 : 0);
+  const filterCount =
+    (status !== "all" ? 1 : 0) +
+    (service !== "all" ? 1 : 0) +
+    (category !== "all" ? 1 : 0) +
+    (search ? 1 : 0);
 
   return (
     <DashboardShell

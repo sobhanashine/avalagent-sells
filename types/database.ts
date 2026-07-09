@@ -15,6 +15,7 @@ export interface Customer {
   service: ServiceType;
   status: StatusType;
   note: string | null;
+  category: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -26,6 +27,7 @@ export interface CustomerInsert {
   service: ServiceType;
   status?: StatusType;
   note?: string | null;
+  category?: string | null;
 }
 
 export interface CustomerUpdate {
@@ -34,6 +36,7 @@ export interface CustomerUpdate {
   service?: ServiceType;
   status?: StatusType;
   note?: string | null;
+  category?: string | null;
 }
 
 export interface Activity {

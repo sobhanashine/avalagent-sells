@@ -93,6 +93,7 @@ export async function getDashboardStats(): Promise<DashboardStats | null> {
 export interface CustomerFilters {
   status?: StatusType | "all";
   service?: ServiceType | "all";
+  category?: string | "all";
   search?: string;
   sort?: "newest" | "oldest";
 }
@@ -111,10 +112,17 @@ export async function getCustomers(
   if (filters.service && filters.service !== "all") {
     query = query.eq("service", filters.service);
   }
+  if (filters.category && filters.category !== "all") {
+    if (filters.category === "none") {
+      query = query.is("category", null);
+    } else {
+      query = query.eq("category", filters.category);
+    }
+  }
   if (filters.search) {
     const term = filters.search.replace(/[%_]/g, (s) => "\\" + s);
     query = query.or(
-      `instagram_username.ilike.%${term}%,phone.ilike.%${term}%,note.ilike.%${term}%`
+      `instagram_username.ilike.%${term}%,phone.ilike.%${term}%,note.ilike.%${term}%,category.ilike.%${term}%`
     );
   }
 

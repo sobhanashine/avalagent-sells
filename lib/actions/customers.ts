@@ -16,11 +16,12 @@ export async function updateCustomer(id: string, formData: FormData) {
     "service",
     "status",
     "note",
+    "category",
   ];
   for (const field of fields) {
     const raw = formData.get(field);
     if (raw === null) continue;
-    if (field === "phone" || field === "note") {
+    if (field === "phone" || field === "note" || field === "category") {
       (update as Record<string, unknown>)[field] = String(raw).trim() || null;
     } else {
       (update as Record<string, unknown>)[field] = String(raw).trim();

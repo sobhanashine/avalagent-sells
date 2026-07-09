@@ -23,6 +23,7 @@ export async function POST(req: Request) {
   const service = String(formData.get("service") ?? "") as ServiceType;
   const status = (String(formData.get("status") ?? "not_contacted") || "not_contacted") as StatusType;
   const note = String(formData.get("note") ?? "").trim() || null;
+  const category = String(formData.get("category") ?? "").trim() || null;
 
   if (!instagram || !service) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -37,6 +38,7 @@ export async function POST(req: Request) {
       service,
       status,
       note,
+      category,
     })
     .select("id")
     .single();
