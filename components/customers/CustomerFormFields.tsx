@@ -70,24 +70,21 @@ export function CustomerFormFields({
     }
   }
 
-  const serviceOptions: { value: ServiceType; label: string; desc: string; price: string }[] = [
+  const serviceOptions: { value: ServiceType; label: string; desc: string }[] = [
     {
       value: "ai",
       label: "AI Agent",
       desc: "Custom AI chatbot & lead qualification workflow",
-      price: "$1,500",
     },
     {
       value: "website",
       label: "Website",
       desc: "High-performance, modern marketing website",
-      price: "$2,500",
     },
     {
       value: "ai+website",
       label: "AI + Website",
       desc: "Complete digital solution with CRM integration",
-      price: "$3,500",
     },
   ];
 
@@ -189,7 +186,7 @@ export function CustomerFormFields({
                 key={opt.value}
                 type="button"
                 onClick={() => setSelectedService(opt.value)}
-                className={`flex items-start justify-between p-3.5 rounded-[var(--radius-md)] border text-left transition-all relative ${
+                className={`flex items-start justify-start p-3.5 rounded-[var(--radius-md)] border text-left transition-all relative ${
                   isSelected
                     ? "border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_6%,transparent)] ring-2 ring-[var(--accent)]/15 shadow-sm"
                     : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-strong)] hover:bg-[color-mix(in_oklab,var(--border)_15%,transparent)]"
@@ -209,9 +206,6 @@ export function CustomerFormFields({
                   <div className="text-xs text-[var(--muted-foreground)] mt-1.5 leading-relaxed">
                     {opt.desc}
                   </div>
-                </div>
-                <div className={`text-sm font-bold shrink-0 ${isSelected ? "text-[var(--accent)]" : "text-[var(--foreground)]"}`}>
-                  {opt.price}
                 </div>
               </button>
             );
