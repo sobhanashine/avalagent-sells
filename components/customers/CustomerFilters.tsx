@@ -2,19 +2,18 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { SERVICE_LABELS, STATUS_LABELS, CATEGORY_LABELS } from "@/lib/format";
+import { SERVICE_LABELS, STATUS_LABELS } from "@/lib/format";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 
 const STATUSES = ["all", "not_contacted", "pending", "accepted", "rejected"] as const;
 const SERVICES = ["all", "ai", "website", "ai+website"] as const;
-const CATEGORIES = ["all", "none", "cold_lead", "warm_lead", "hot_lead", "vip", "enterprise"] as const;
 const SORTS = [
   { value: "newest", label: "Newest first" },
   { value: "oldest", label: "Oldest first" },
 ] as const;
 
-export function CustomerFilters() {
+export function CustomerFilters({ categories = [] }: { categories?: string[] }) {
   const router = useRouter();
   const params = useSearchParams();
   const [search, setSearch] = React.useState(params.get("q") ?? "");
@@ -101,11 +100,23 @@ export function CustomerFilters() {
         label=""
         className="w-[150px]"
       >
-        {CATEGORIES.map((c) => (
-          <option key={c} value={c}>
-            {c === "all" ? "All categories" : c === "none" ? "No category" : CATEGORY_LABELS[c]}
-          </option>
-        ))}
+        {["all", "none", ...categories].map((c) => {
+          let label = c;
+          if (c === "all") label = "All categories";
+          else if (c === "none") label = "No category";
+          else {
+            label = c
+              .split(/[_-]/)
+              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+              .join(" ");
+            if (label.toLowerCase() === "vip") label = "VIP";
+          }
+          return (
+            <option key={c} value={c}>
+              {label}
+            </option>
+          );
+        })}
       </Select>
       <Select
         name="sort"

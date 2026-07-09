@@ -168,3 +168,20 @@ export async function getCustomerTimeline(
   }
   return (data ?? []) as Activity[];
 }
+
+export async function getUniqueCategories(): Promise<string[]> {
+  const supabase = await createClient();
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("customers")
+    .select("category")
+    .not("category", "is", null);
+  if (error) {
+    console.error("getUniqueCategories:", describeDbError(error));
+    return [];
+  }
+  const categories = data
+    .map((row) => row.category)
+    .filter((c): c is string => typeof c === "string" && c.trim() !== "");
+  return Array.from(new Set(categories)).sort();
+}

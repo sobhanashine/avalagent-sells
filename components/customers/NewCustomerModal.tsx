@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { CustomerFormFields } from "@/components/customers/CustomerFormFields";
 
-export function NewCustomerModal() {
+export function NewCustomerModal({ categories }: { categories: string[] }) {
   const router = useRouter();
   const params = useSearchParams();
   const isNew = params.get("new") === "1";
@@ -48,6 +48,7 @@ export function NewCustomerModal() {
             onCancel={close}
             onSuccess={close}
             submitLabel="Add customer"
+            existingCategories={categories}
           />
         </DialogBody>
       </DialogContent>

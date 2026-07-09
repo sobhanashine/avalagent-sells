@@ -14,6 +14,8 @@ interface CustomerFormProps {
   submitLabel?: string;
   /** Action called on success—e.g. close a modal or panel */
   onSuccess?: () => void;
+  /** List of unique categories already stored in database */
+  existingCategories?: string[];
 }
 
 export function CustomerFormFields({
@@ -22,6 +24,7 @@ export function CustomerFormFields({
   standalone = true,
   submitLabel,
   onSuccess,
+  existingCategories = [],
 }: CustomerFormProps) {
   const formRef = React.useRef<HTMLFormElement>(null);
   const [submitting, setSubmitting] = React.useState(false);
@@ -37,6 +40,26 @@ export function CustomerFormFields({
   const [selectedCategory, setSelectedCategory] = React.useState<string | null>(
     customer?.category ?? null
   );
+  const [customCategories, setCustomCategories] = React.useState<string[]>([]);
+  const [newCategoryInput, setNewCategoryInput] = React.useState("");
+
+  function handleAddCustomCategory() {
+    const val = newCategoryInput.trim().toLowerCase().replace(/[\s-]+/g, "_");
+    if (!val) return;
+    
+    // Add to session custom list if not already in presets, existing, or custom lists
+    const presets = ["cold_lead", "warm_lead", "hot_lead", "vip", "enterprise"];
+    if (
+      !presets.includes(val) &&
+      !existingCategories.includes(val) &&
+      !customCategories.includes(val) &&
+      customer?.category !== val
+    ) {
+      setCustomCategories((prev) => [...prev, val]);
+    }
+    setSelectedCategory(val);
+    setNewCategoryInput("");
+  }
 
   React.useEffect(() => {
     if (!error) return;
@@ -123,38 +146,52 @@ export function CustomerFormFields({
     },
   ];
 
-  const categoryOptions: { value: string | null; label: string; activeClass: string }[] = [
-    {
-      value: null,
-      label: "None",
-      activeClass: "border-slate-500/50 bg-[color-mix(in_oklab,var(--border-strong)_20%,transparent)] text-[var(--foreground)] ring-2 ring-slate-500/10",
-    },
-    {
-      value: "cold_lead",
-      label: "Cold Lead",
-      activeClass: "border-sky-500/50 bg-sky-500/8 text-sky-600 dark:text-sky-400 ring-2 ring-sky-500/15",
-    },
-    {
-      value: "warm_lead",
-      label: "Warm Lead",
-      activeClass: "border-amber-500/50 bg-amber-500/8 text-amber-600 dark:text-amber-400 ring-2 ring-amber-500/15",
-    },
-    {
-      value: "hot_lead",
-      label: "Hot Lead",
-      activeClass: "border-rose-500/50 bg-rose-500/8 text-rose-600 dark:text-rose-400 ring-2 ring-rose-500/15",
-    },
-    {
-      value: "vip",
-      label: "VIP",
-      activeClass: "border-violet-500/50 bg-violet-500/8 text-violet-600 dark:text-violet-400 ring-2 ring-violet-500/15",
-    },
-    {
-      value: "enterprise",
-      label: "Enterprise",
-      activeClass: "border-emerald-500/50 bg-emerald-500/8 text-emerald-600 dark:text-emerald-400 ring-2 ring-emerald-500/15",
-    },
-  ];
+  const presets = ["cold_lead", "warm_lead", "hot_lead", "vip", "enterprise"];
+  const allCategories = Array.from(
+    new Set([
+      ...presets,
+      ...existingCategories,
+      ...(customer?.category ? [customer.category] : []),
+      ...customCategories,
+    ])
+  );
+
+  const categoryTones: Record<string, string> = {
+    cold_lead: "border-sky-500/50 bg-sky-500/8 text-sky-600 dark:text-sky-400 ring-2 ring-sky-500/15",
+    warm_lead: "border-amber-500/50 bg-amber-500/8 text-amber-600 dark:text-amber-400 ring-2 ring-amber-500/15",
+    hot_lead: "border-rose-500/50 bg-rose-500/8 text-rose-600 dark:text-rose-400 ring-2 ring-rose-500/15",
+    vip: "border-violet-500/50 bg-violet-500/8 text-violet-600 dark:text-violet-400 ring-2 ring-violet-500/15",
+    enterprise: "border-emerald-500/50 bg-emerald-500/8 text-emerald-600 dark:text-emerald-400 ring-2 ring-emerald-500/15",
+  };
+
+  const badgeColors = ["indigo", "info", "violet", "warning", "danger", "neutral", "success"] as const;
+  const toneClasses: Record<string, string> = {
+    indigo: "border-indigo-500/50 bg-indigo-500/8 text-indigo-600 dark:text-indigo-400 ring-2 ring-indigo-500/15",
+    info: "border-sky-500/50 bg-sky-500/8 text-sky-600 dark:text-sky-400 ring-2 ring-sky-500/15",
+    violet: "border-violet-500/50 bg-violet-500/8 text-violet-600 dark:text-violet-400 ring-2 ring-violet-500/15",
+    warning: "border-amber-500/50 bg-amber-500/8 text-amber-600 dark:text-amber-400 ring-2 ring-amber-500/15",
+    danger: "border-rose-500/50 bg-rose-500/8 text-rose-600 dark:text-rose-400 ring-2 ring-rose-500/15",
+    neutral: "border-slate-500/50 bg-slate-500/8 text-slate-600 dark:text-slate-400 ring-2 ring-slate-500/15",
+    success: "border-emerald-500/50 bg-emerald-500/8 text-emerald-600 dark:text-emerald-400 ring-2 ring-emerald-500/15",
+  };
+
+  const getCategoryClass = (cat: string) => {
+    if (categoryTones[cat]) return categoryTones[cat];
+    let hash = 0;
+    for (let i = 0; i < cat.length; i++) {
+      hash = cat.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const tone = badgeColors[Math.abs(hash) % badgeColors.length];
+    return toneClasses[tone];
+  };
+
+  const getCategoryLabel = (cat: string) => {
+    let label = cat
+      .split(/[_-]/)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+    return label.toLowerCase() === "vip" ? "VIP" : label;
+  };
 
   const formFieldsContent = (
     <div className="space-y-5">
@@ -292,23 +329,64 @@ export function CustomerFormFields({
           Customer Category / Tag
         </label>
         <div className="flex flex-wrap gap-2">
-          {categoryOptions.map((opt) => {
-            const isSelected = selectedCategory === opt.value;
+          {/* None Option */}
+          <button
+            type="button"
+            onClick={() => setSelectedCategory(null)}
+            className={`px-3 py-1.5 rounded-full border text-xs font-semibold transition-all cursor-pointer ${
+              selectedCategory === null
+                ? "border-slate-500/50 bg-[color-mix(in_oklab,var(--border-strong)_20%,transparent)] text-[var(--foreground)] ring-2 ring-slate-500/10"
+                : "border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] hover:border-[var(--border-strong)] hover:bg-[color-mix(in_oklab,var(--border)_15%,transparent)]"
+            }`}
+          >
+            None
+          </button>
+
+          {/* Dynamic Options */}
+          {allCategories.map((cat) => {
+            const isSelected = selectedCategory === cat;
             return (
               <button
-                key={opt.value ?? "none"}
+                key={cat}
                 type="button"
-                onClick={() => setSelectedCategory(opt.value)}
+                onClick={() => setSelectedCategory(cat)}
                 className={`px-3 py-1.5 rounded-full border text-xs font-semibold transition-all cursor-pointer ${
                   isSelected
-                    ? opt.activeClass
+                    ? getCategoryClass(cat)
                     : "border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] hover:border-[var(--border-strong)] hover:bg-[color-mix(in_oklab,var(--border)_15%,transparent)]"
                 }`}
               >
-                {opt.label}
+                {getCategoryLabel(cat)}
               </button>
             );
           })}
+        </div>
+
+        {/* Dynamic Category Creator */}
+        <div className="flex items-center gap-2 mt-1 max-w-sm">
+          <input
+            type="text"
+            placeholder="Create custom category..."
+            value={newCategoryInput}
+            onChange={(e) => setNewCategoryInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleAddCustomCategory();
+              }
+            }}
+            className="flex-1 h-9 px-3 rounded-[var(--radius-md)] bg-[var(--surface)] border border-[var(--border)] text-xs focus:outline-none focus:border-[var(--accent)] transition-all placeholder:text-[var(--muted-foreground)]"
+          />
+          <button
+            type="button"
+            onClick={handleAddCustomCategory}
+            className="h-9 px-3 text-xs font-semibold rounded-[var(--radius-md)] bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--muted)] hover:border-[var(--border-strong)] transition-all flex items-center gap-1 shrink-0 cursor-pointer"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Add
+          </button>
         </div>
       </div>
 

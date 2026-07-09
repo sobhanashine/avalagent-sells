@@ -22,9 +22,11 @@ import { STATUSES } from "@/types/database";
 export function CustomerDetailPanel({
   customer,
   activities,
+  uniqueCategories = [],
 }: {
   customer: Customer;
   activities: Activity[];
+  uniqueCategories?: string[];
 }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -155,6 +157,7 @@ export function CustomerDetailPanel({
                 customer={customer}
                 standalone={false}
                 onCancel={() => setEditing(false)}
+                existingCategories={uniqueCategories}
               />
             </div>
 

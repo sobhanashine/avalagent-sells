@@ -2,7 +2,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
-import { getCustomers, getCustomer, getCustomerTimeline } from "@/lib/queries";
+import { getCustomers, getCustomer, getCustomerTimeline, getUniqueCategories } from "@/lib/queries";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -51,6 +51,7 @@ export default async function CustomersPage({
   const sort = (params.sort as "newest" | "oldest" | undefined) ?? "newest";
 
   const customers = await getCustomers({ status, service, category, search, sort });
+  const uniqueCategories = await getUniqueCategories();
 
   let detail: { customer: Awaited<ReturnType<typeof getCustomer>>; activities: Awaited<ReturnType<typeof getCustomerTimeline>> } | null = null;
   if (params.id) {
@@ -96,18 +97,19 @@ export default async function CustomersPage({
       <Card className="overflow-hidden">
         <div className="p-4 border-b border-[var(--border)] flex items-center gap-3 flex-wrap">
           <div className="flex-1 min-w-0">
-            <CustomerFilters />
+            <CustomerFilters categories={uniqueCategories} />
           </div>
           <NewCustomerButton />
         </div>
         <CustomerTable customers={customers} />
       </Card>
 
-      <NewCustomerModal />
+      <NewCustomerModal categories={uniqueCategories} />
       {detail?.customer ? (
         <CustomerDetailPanel
           customer={detail.customer}
           activities={detail.activities ?? []}
+          uniqueCategories={uniqueCategories}
         />
       ) : null}
     </DashboardShell>
