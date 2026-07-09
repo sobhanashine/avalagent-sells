@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   }
 
   const formData = await req.formData();
-  const instagram = String(formData.get("instagram") ?? "").trim();
+  const instagram = String(formData.get("instagram_username") ?? formData.get("instagram") ?? "").trim();
   const phone = String(formData.get("phone") ?? "").trim() || null;
   const service = String(formData.get("service") ?? "") as ServiceType;
   const status = (String(formData.get("status") ?? "not_contacted") || "not_contacted") as StatusType;

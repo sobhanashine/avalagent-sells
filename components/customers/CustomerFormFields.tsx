@@ -1,11 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { SERVICE_LABELS, STATUS_LABELS } from "@/lib/format";
-import type { Customer } from "@/types/database";
+import type { Customer, ServiceType, StatusType } from "@/types/database";
 
 interface CustomerFormProps {
   customer?: Customer;
@@ -29,9 +27,17 @@ export function CustomerFormFields({
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
+  // Form states for custom selectors
+  const [selectedService, setSelectedService] = React.useState<ServiceType>(
+    customer?.service ?? "ai"
+  );
+  const [selectedStatus, setSelectedStatus] = React.useState<StatusType>(
+    customer?.status ?? "not_contacted"
+  );
+
   React.useEffect(() => {
     if (!error) return;
-    const t = setTimeout(() => setError(null), 3000);
+    const t = setTimeout(() => setError(null), 4000);
     return () => clearTimeout(t);
   }, [error]);
 
@@ -43,96 +49,253 @@ export function CustomerFormFields({
     setError(null);
     try {
       const fd = new FormData(formRef.current);
+      // Ensure custom select values are present in FormData if hidden input doesn't propagate (it will, but safe check)
+      fd.set("service", selectedService);
+      fd.set("status", selectedStatus);
+
       const res = await fetch("/api/customers", {
         method: "POST",
         body: fd,
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        throw new Error(body.error ?? "Failed");
+        throw new Error(body.error ?? "Failed to save customer");
       }
       formRef.current.reset();
       onSuccess?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed");
+      setError(err instanceof Error ? err.message : "Failed to add customer");
     } finally {
       setSubmitting(false);
     }
   }
 
-  function handleCancel() {
-    onCancel?.();
-  }
+  const serviceOptions: { value: ServiceType; label: string; desc: string; price: string }[] = [
+    {
+      value: "ai",
+      label: "AI Agent",
+      desc: "Custom AI chatbot & lead qualification workflow",
+      price: "$1,500",
+    },
+    {
+      value: "website",
+      label: "Website",
+      desc: "High-performance, modern marketing website",
+      price: "$2,500",
+    },
+    {
+      value: "ai+website",
+      label: "AI + Website",
+      desc: "Complete digital solution with CRM integration",
+      price: "$3,500",
+    },
+  ];
 
-  return (
-    <form
-      ref={formRef}
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-4"
-    >
-      <div className="grid grid-cols-2 gap-3">
-        <Input
-          name="instagram"
-          label="Instagram"
-          placeholder="username"
-          defaultValue={customer?.instagram_username}
-          required
-        />
-        <Input
-          name="phone"
-          label="Phone"
-          placeholder="+1 555..."
-          defaultValue={customer?.phone ?? ""}
-        />
+  const statusOptions: { value: StatusType; label: string; activeClass: string; hoverClass: string; dotColor: string }[] = [
+    {
+      value: "not_contacted",
+      label: "Not Contacted",
+      activeClass: "border-sky-500/50 bg-sky-500/8 text-sky-600 dark:text-sky-400 ring-2 ring-sky-500/15",
+      hoverClass: "hover:border-sky-500/30 hover:bg-sky-500/5",
+      dotColor: "bg-sky-500",
+    },
+    {
+      value: "pending",
+      label: "Pending",
+      activeClass: "border-amber-500/50 bg-amber-500/8 text-amber-600 dark:text-amber-400 ring-2 ring-amber-500/15",
+      hoverClass: "hover:border-amber-500/30 hover:bg-amber-500/5",
+      dotColor: "bg-amber-500",
+    },
+    {
+      value: "accepted",
+      label: "Accepted",
+      activeClass: "border-emerald-500/50 bg-emerald-500/8 text-emerald-600 dark:text-emerald-400 ring-2 ring-emerald-500/15",
+      hoverClass: "hover:border-emerald-500/30 hover:bg-emerald-500/5",
+      dotColor: "bg-emerald-500",
+    },
+    {
+      value: "rejected",
+      label: "Rejected",
+      activeClass: "border-rose-500/50 bg-rose-500/8 text-rose-600 dark:text-rose-400 ring-2 ring-rose-500/15",
+      hoverClass: "hover:border-rose-500/30 hover:bg-rose-500/5",
+      dotColor: "bg-rose-500",
+    },
+  ];
+
+  const formFieldsContent = (
+    <div className="space-y-5">
+      {/* Hidden inputs to make sure standard forms get the values */}
+      <input type="hidden" name="service" value={selectedService} />
+      <input type="hidden" name="status" value={selectedStatus} />
+
+      {/* Grid for Instagram and Phone */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Instagram Field */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider flex items-center gap-1.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--muted-foreground)]">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+            </svg>
+            Instagram Username
+          </label>
+          <div className="relative group">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[var(--muted-foreground)] select-none">@</span>
+            <input
+              type="text"
+              name="instagram_username"
+              required
+              placeholder="username"
+              defaultValue={customer?.instagram_username}
+              className="w-full h-10 pl-7 pr-3 rounded-[var(--radius-md)] bg-[var(--surface)] border border-[var(--border)] text-sm transition-all focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 hover:border-[var(--border-strong)] placeholder:text-[var(--muted-foreground)]"
+            />
+          </div>
+        </div>
+
+        {/* Phone Field */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider flex items-center gap-1.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--muted-foreground)]">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+            </svg>
+            Phone Number
+          </label>
+          <input
+            type="tel"
+            name="phone"
+            placeholder="+1 555-0199"
+            defaultValue={customer?.phone ?? ""}
+            className="w-full h-10 px-3 rounded-[var(--radius-md)] bg-[var(--surface)] border border-[var(--border)] text-sm transition-all focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 hover:border-[var(--border-strong)] placeholder:text-[var(--muted-foreground)]"
+          />
+        </div>
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <Select
-          name="service"
-          label="Service"
-          defaultValue={customer?.service ?? "ai"}
-          required
-        >
-          <option value="ai">{SERVICE_LABELS.ai}</option>
-          <option value="website">{SERVICE_LABELS.website}</option>
-          <option value="ai+website">{SERVICE_LABELS["ai+website"]}</option>
-        </Select>
-        <Select
-          name="status"
-          label="Status"
-          defaultValue={customer?.status ?? "not_contacted"}
-        >
-          <option value="not_contacted">{STATUS_LABELS.not_contacted}</option>
-          <option value="pending">{STATUS_LABELS.pending}</option>
-          <option value="accepted">{STATUS_LABELS.accepted}</option>
-          <option value="rejected">{STATUS_LABELS.rejected}</option>
-        </Select>
+
+      {/* Service Selector Redesign */}
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider flex items-center gap-1.5">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--muted-foreground)]">
+            <polygon points="12 2 2 7 12 12 22 7 12 2" />
+            <polyline points="2 17 12 22 22 17" />
+            <polyline points="2 12 12 17 22 12" />
+          </svg>
+          Select Service
+        </label>
+        <div className="grid grid-cols-1 gap-2.5">
+          {serviceOptions.map((opt) => {
+            const isSelected = selectedService === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setSelectedService(opt.value)}
+                className={`flex items-start justify-between p-3.5 rounded-[var(--radius-md)] border text-left transition-all relative ${
+                  isSelected
+                    ? "border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_6%,transparent)] ring-2 ring-[var(--accent)]/15 shadow-sm"
+                    : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-strong)] hover:bg-[color-mix(in_oklab,var(--border)_15%,transparent)]"
+                }`}
+              >
+                <div className="pr-4">
+                  <div className="text-sm font-semibold flex items-center gap-1.5">
+                    {opt.label}
+                    {isSelected && (
+                      <span className="size-4 rounded-full bg-[var(--accent)] text-white inline-flex items-center justify-center p-0.5 shrink-0 scale-95 animate-fade-in">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-[var(--muted-foreground)] mt-1.5 leading-relaxed">
+                    {opt.desc}
+                  </div>
+                </div>
+                <div className={`text-sm font-bold shrink-0 ${isSelected ? "text-[var(--accent)]" : "text-[var(--foreground)]"}`}>
+                  {opt.price}
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
+
+      {/* Status Selector Redesign */}
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider flex items-center gap-1.5">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--muted-foreground)]">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          Customer Status
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          {statusOptions.map((opt) => {
+            const isSelected = selectedStatus === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setSelectedStatus(opt.value)}
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-[var(--radius-md)] border text-sm font-medium transition-all ${
+                  isSelected
+                    ? opt.activeClass
+                    : `border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] ${opt.hoverClass}`
+                }`}
+              >
+                <span className={`size-2 rounded-full shrink-0 ${opt.dotColor}`} />
+                <span className="truncate">{opt.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Note Area Redesign */}
       <div className="flex flex-col gap-1.5">
-        <label
-          htmlFor="note"
-          className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide"
-        >
-          Note
+        <label htmlFor="note" className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider flex items-center gap-1.5">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--muted-foreground)]">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" />
+          </svg>
+          Notes / Context
         </label>
         <textarea
           id="note"
           name="note"
           rows={3}
           defaultValue={customer?.note ?? ""}
-          placeholder="Add context about this lead…"
-          className="px-3 py-2 rounded-[var(--radius-md)] bg-[var(--surface)] border border-[var(--border)] text-sm resize-none placeholder:text-[var(--muted-foreground)] focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15"
+          placeholder="Add important context, interaction history, or specific lead details here..."
+          className="w-full px-3 py-2.5 rounded-[var(--radius-md)] bg-[var(--surface)] border border-[var(--border)] text-sm resize-none transition-all focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 hover:border-[var(--border-strong)] placeholder:text-[var(--muted-foreground)] leading-relaxed"
         />
       </div>
 
-      {error ? (
-        <div className="text-sm text-[var(--danger)] bg-[color-mix(in_oklab,var(--danger)_8%,transparent)] border border-[color-mix(in_oklab,var(--danger)_20%,transparent)] rounded-md px-3 py-2">
-          {error}
+      {/* Error Message */}
+      {error && (
+        <div className="text-sm text-[var(--danger)] bg-[color-mix(in_oklab,var(--danger)_8%,transparent)] border border-[color-mix(in_oklab,var(--danger)_20%,transparent)] rounded-md px-3.5 py-2.5 flex items-start gap-2 animate-slide-up">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mt-0.5 shrink-0">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span>{error}</span>
         </div>
-      ) : null}
+      )}
+    </div>
+  );
 
-      {standalone ? (
-        <div className="flex items-center justify-end gap-2 pt-2">
-          <Button type="button" variant="ghost" size="md" onClick={handleCancel}>
+  if (standalone) {
+    return (
+      <form
+        ref={formRef}
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-6"
+      >
+        {formFieldsContent}
+        <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--border)]">
+          <Button type="button" variant="ghost" size="md" onClick={onCancel}>
             Cancel
           </Button>
           <Button
@@ -144,7 +307,10 @@ export function CustomerFormFields({
             {submitLabel ?? (customer ? "Save changes" : "Add customer")}
           </Button>
         </div>
-      ) : null}
-    </form>
-  );
+      </form>
+    );
+  }
+
+  // Raw fields rendering (nested inside parent form in CustomerDetailPanel)
+  return formFieldsContent;
 }
